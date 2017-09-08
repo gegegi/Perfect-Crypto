@@ -279,7 +279,7 @@ public class MemoryIO: ByteIOBase, ByteSink, ByteSource {
 	/// Create a new object from an existing data buffer.
 	/// Pointer must remain valid while using it as a buffer.
 	public init(_ pointer: UnsafeRawBufferPointer) {
-		super.init(bio: BIO_new_mem_buf(pointer.baseAddress, Int32(pointer.count)))
+		super.init(bio: BIO_new_mem_buf(UnsafeMutableRawPointer(mutating: pointer.baseAddress), Int32(pointer.count)))
 	}
 	/// Create a new buffer from the indicated data.
 	/// The buffer's data is copied to a new buffer and so does not need to remain valid.
@@ -360,7 +360,7 @@ public class NullIO: ByteIOBase, ByteSink, ByteSource {
 public class AcceptIO: ByteIOBase, ByteSource, ByteSink {
 	/// Name is "host:port"
 	public init(name: String) {
-		super.init(bio: BIO_new_accept(name))
+		super.init(bio: BIO_new_accept(UnsafeMutablePointer<Int8>(mutating: name)))
 		BIO_ctrl(bio, BIO_C_SET_BIND_MODE, Int(BIO_BIND_REUSEADDR), nil)
 	}
 	/// Attempt to listen on the indicated address.
@@ -391,7 +391,7 @@ public class AcceptIO: ByteIOBase, ByteSource, ByteSink {
 public class ConnectIO: ByteIOBase, ByteSource, ByteSink {
 	/// Name is "host:port"
 	public init(name: String) {
-		super.init(bio: BIO_new_connect(name))
+		super.init(bio: BIO_new_connect(UnsafeMutablePointer<Int8>(mutating: name)))
 	}
 	/// Attempt to open the connection.
 	public func connect() throws {
@@ -456,4 +456,3 @@ public class CipherFilter: ByteIOBase {
 		try checkedResult(BIO_ctrl(bio, BIO_C_GET_CIPHER_STATUS, 0, nil))
 	}
 }
-
